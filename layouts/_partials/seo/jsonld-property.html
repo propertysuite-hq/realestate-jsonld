@@ -1,0 +1,46 @@
+{{/*
+  Real Estate JSON-LD — property-level structured data
+  -------------------------------------------------------
+  Emits schema.org JSON-LD describing the property/business as a whole
+  (as opposed to jsonld-unit.html, which describes one rentable unit).
+
+  Call this once, site-wide — typically from your base template's <head>:
+
+    {{ partial "seo/jsonld-property.html" . }}
+
+  Reads from Site.Params.contact (add this to your site config):
+
+    contact:
+      phone: "555.123.4567"
+      address:
+        street: "100 Example St"
+        city: "Anytown"
+        state: "OH"
+        zip: "45000"
+
+  Params (site config, top-level):
+    propertyType   string — schema.org @type override (default
+                   "ApartmentComplex"). Other options include
+                   "RealEstateListing", "LodgingBusiness",
+                   "SelfStorage" — pick whatever matches your business;
+                   see https://schema.org/LocalBusiness and its subtypes.
+*/}}
+
+{{- $type := .Site.Params.propertyType | default "ApartmentComplex" -}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "{{ $type }}",
+  "name": "{{ .Site.Title | htmlEscape }}",
+  "url": "{{ .Site.BaseURL }}",
+  "telephone": "{{ with .Site.Params.contact }}{{ .phone }}{{ end }}",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "{{ with .Site.Params.contact }}{{ .address.street }}{{ end }}",
+    "addressLocality": "{{ with .Site.Params.contact }}{{ .address.city }}{{ end }}",
+    "addressRegion": "{{ with .Site.Params.contact }}{{ .address.state }}{{ end }}",
+    "postalCode": "{{ with .Site.Params.contact }}{{ .address.zip }}{{ end }}",
+    "addressCountry": "{{ with .Site.Params.contact }}{{ .address.country | default "US" }}{{ else }}US{{ end }}"
+  }
+}
+</script>

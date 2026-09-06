@@ -1,0 +1,57 @@
+{{/*
+  Real Estate JSON-LD — unit-level structured data
+  --------------------------------------------------
+  Emits schema.org JSON-LD for a single rentable unit (an apartment,
+  a single-family rental, a storage unit, a room — anything with
+  bedrooms/baths/occupancy-style attributes).
+
+  Call this from the unit's own single-page template, e.g.:
+
+    {{ partial "seo/jsonld-unit.html" . }}
+
+  Reads directly from the current Page's front matter — no dict wrapper
+  needed. Front matter fields it looks for (all optional except title):
+
+    summary       string  — short description; falls back to a generic line
+    bedrooms      int     — default 1
+    baths:
+      full        int     — default 1
+      partial     int     — default 0
+    occupancy     int     — max occupancy; defaults to bedrooms
+    tags          list    — used as keywords if present
+    type          string  — schema.org @type override (default "Apartment").
+                            e.g. "House", "SingleFamilyResidence", "Room",
+                            "Accommodation" — see https://schema.org/Accommodation
+                            and its subtypes for valid options.
+
+  Also picks up any page-bundle images automatically (Resources.ByType "image").
+*/}}
+
+{{- $type := .Params.type | default "Apartment" -}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "{{ $type }}",
+  "name": "{{ .Title | htmlEscape }}",
+  "description": "{{ with .Params.summary }}{{ . | plainify | htmlEscape }}{{ else }}A rental listing at {{ .Site.Title | htmlEscape }}{{ end }}",
+  "numberOfBedrooms": {{ .Params.bedrooms | default 1 }},
+  "numberOfPartialBathrooms": {{ .Params.baths.partial | default 0 }},
+  "numberOfFullBathrooms": {{ .Params.baths.full | default 1 }},
+  "numberOfBathroomsTotal": {{ add (.Params.baths.full | default 0) (.Params.baths.partial | default 0) }},
+  "occupancy": {
+    "@type": "QuantitativeValue",
+    "minValue": {{ .Params.bedrooms | default 1 }},
+    "maxValue": {{ .Params.occupancy | default .Params.bedrooms | default 1 }}
+  },
+  "url": "{{ .Permalink }}",
+  "image": [
+    {{- with .Resources.ByType "image" -}}
+    {{- $len := sub (len .) 1 -}}
+      {{- range $i, $img := . -}}
+        "{{ $img.Permalink }}"{{ if lt $i $len }},{{ end }}
+      {{- end -}}
+    {{- end -}}
+  ],
+  "keywords": "{{ with .Params.tags }}{{ delimit . ", " }}{{ else }}{{ .Site.Title }}{{ end }}"
+}
+</script>
