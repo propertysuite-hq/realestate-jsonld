@@ -1,38 +1,49 @@
 # Real Estate JSON-LD — a standalone Hugo component
 
-Two small partials that emit valid [schema.org](https://schema.org) JSON-LD
-structured data for rental/property sites — one for an individual unit
-(`jsonld-unit.html`), one for the property/business as a whole
-(`jsonld-property.html`). No theme dependency; drop into any Hugo site.
+A small, theme-independent Hugo component that emits schema.org JSON-LD structured data for rental and property websites.
 
-Originally extracted from the [Apartments Hugo theme](https://propertysuitehq.com/themes/apartments),
-generalized so it isn't locked to "apartment complexes" specifically —
-single-family rental portfolios, storage facilities, vacation rentals, or
-any small property business can use it by overriding the `@type`.
+It provides two partials:
+
+- `jsonld-unit.html` — structured data for an individual rentable unit or listing.
+- `jsonld-property.html` — structured data for the property or property business as a whole.
+
+There are no package dependencies and no theme dependency. Copy the partials into any Hugo site and configure the fields you want to expose.
+
+Originally extracted from the [Apartments Hugo theme](https://apartments.propertysuitehq.com/), the component was generalized so it isn't locked to apartment complexes specifically. Single-family rental portfolios, storage facilities, vacation rentals, and other small property businesses can adapt the schema type through configuration.
 
 ## Why this matters
 
-Search engines (and AI assistants that cite search results) use structured
-data to understand what a page is actually about — a listing with proper
-`Apartment`/`ApartmentComplex` markup is more likely to show up correctly
-in rich results (bedroom/bathroom counts, etc.) than one that's just plain
-HTML text.
+Structured data helps search engines understand what a page represents. Providing appropriate schema.org markup can make property and listing information easier for search engines and other systems to interpret than relying on page text alone.
+
+This component focuses on generating the structured data; it does not provide a complete SEO strategy or guarantee rich results.
 
 ## Install
 
-Copy `layouts/_partials/seo/jsonld-unit.html` and
-`layouts/_partials/seo/jsonld-property.html` into your site's own
-`layouts/_partials/seo/` folder.
+Copy these files into your Hugo site's partials directory:
+
+```text
+layouts/
+└── _partials/
+    └── seo/
+        ├── jsonld-unit.html
+        └── jsonld-property.html
+```
+
+No package manager, build step, or theme installation is required.
 
 ## Usage
 
-**Unit-level** — call from your unit/listing single-page template:
+### Unit-level structured data
+
+Call the unit partial from the single-page template used for an individual unit or listing:
 
 ```go-html-template
 {{ partial "seo/jsonld-unit.html" . }}
 ```
 
-Front matter it reads (all optional except the page title):
+The partial reads values from the current page's front matter. All fields are optional except the page title.
+
+Example:
 
 ```yaml
 title: "Two-Bedroom Unit"
@@ -43,20 +54,25 @@ baths:
   partial: 0
 occupancy: 4
 tags: ["two bedroom", "pet friendly"]
-type: "Apartment"   # optional override — see below
+type: "Apartment"   # optional schema.org @type override
 ```
 
-**Property-level** — call once, site-wide, typically in your base template's
-`<head>`:
+The unit partial also automatically includes images from the page bundle when page resources of type `image` are available.
+
+### Property-level structured data
+
+Call the property partial once for the site, typically from the base template's `<head>`:
 
 ```go-html-template
 {{ partial "seo/jsonld-property.html" . }}
 ```
 
-Site config it reads:
+The property partial reads the property type and contact/address information from the Hugo site configuration.
+
+Example:
 
 ```yaml
-propertyType: "ApartmentComplex"   # optional override — see below
+propertyType: "ApartmentComplex"   # optional schema.org @type override
 params:
   contact:
     phone: "555.123.4567"
@@ -65,12 +81,12 @@ params:
       city: "Anytown"
       state: "OH"
       zip: "45000"
+      country: "US"
 ```
 
 ## Adapting the schema type to your business
 
-Both partials default to apartment-flavored types (`Apartment` /
-`ApartmentComplex`), but accept an override:
+Both partials default to apartment-flavored schema types (`Apartment` / `ApartmentComplex`), but both support an override so the component can be adapted to other property businesses.
 
 | Your business | Unit-level `type` | Property-level `propertyType` |
 |---|---|---|
@@ -79,16 +95,17 @@ Both partials default to apartment-flavored types (`Apartment` /
 | Storage facility | `Accommodation` | `SelfStorage` |
 | Short-term/vacation rental | `Apartment` or `House` | `LodgingBusiness` |
 
-Full list of valid types: [schema.org/Accommodation](https://schema.org/Accommodation)
-and [schema.org/LocalBusiness](https://schema.org/LocalBusiness).
+Choose a schema.org type that accurately represents your business and the entity being described. The component does not restrict the override to the examples above.
 
 ## Testing your markup
 
-After deploying, validate with Google's
-[Rich Results Test](https://search.google.com/test/rich-results) or the
-[Schema Markup Validator](https://validator.schema.org/) — paste in your
-live URL.
+After deploying your site, validate the generated structured data with:
+
+- Google's [Rich Results Test](https://search.google.com/test/rich-results)
+- The [Schema Markup Validator](https://validator.schema.org/)
+
+Test a live URL or the generated markup and verify that the resulting schema accurately represents the content on the page.
 
 ## License
 
-MIT — see `LICENSE`.
+MIT — see [`LICENSE`](LICENSE).
