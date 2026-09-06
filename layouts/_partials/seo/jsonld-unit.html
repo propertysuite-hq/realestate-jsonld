@@ -28,6 +28,8 @@
 */}}
 
 {{- $type := .Params.type | default "Apartment" -}}
+{{- $fullBaths := .Params.baths.full | default 1 -}}
+{{- $partialBaths := .Params.baths.partial | default 0 -}}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -35,9 +37,9 @@
   "name": "{{ .Title | htmlEscape }}",
   "description": "{{ with .Params.summary }}{{ . | plainify | htmlEscape }}{{ else }}A rental listing at {{ .Site.Title | htmlEscape }}{{ end }}",
   "numberOfBedrooms": {{ .Params.bedrooms | default 1 }},
-  "numberOfPartialBathrooms": {{ .Params.baths.partial | default 0 }},
-  "numberOfFullBathrooms": {{ .Params.baths.full | default 1 }},
-  "numberOfBathroomsTotal": {{ add (.Params.baths.full | default 0) (.Params.baths.partial | default 0) }},
+  "numberOfPartialBathrooms": {{ $partialBaths }},
+  "numberOfFullBathrooms": {{ $fullBaths }},
+  "numberOfBathroomsTotal": {{ add $fullBaths $partialBaths }},
   "occupancy": {
     "@type": "QuantitativeValue",
     "minValue": {{ .Params.bedrooms | default 1 }},
